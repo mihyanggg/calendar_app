@@ -1,89 +1,72 @@
-const apiURL = 'http://localhost:3000';
+const calendarEl = document.getElementById('calendar');
+const monthYearEl = document.getElementById('month-year');
+const prevBtn = document.getElementById('prev-month');
+const nextBtn = document.getElementById('next-month');
 
-async function fetchNotes(date) {
-  const res = await fetch(`${apiURL}/notes`);
-  const data = await res.json();
-  return data[date] || [];
-}
+let currentDate = new Date();
 
-async function addNoteToAPI(date, note) {
-  await fetch(`${apiURL}/notes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ date, note }),
-  });
-}
+function generateCalendar(date) {
+  calendarEl.innerHTML = ''; // Clear existing calendar
+  const currentYear = date.getFullYear();
+  const currentMonth = date.getMonth();
 
-async function deleteNoteFromAPI(date, note) {
-  await fetch(`${apiURL}/notes`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ date, note }),
-  });
-}
+  // Set header
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  monthYearEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
-function generateCalendar(year, month) {
-  const calendar = document.getElementById('calendar');
-  calendar.innerHTML = '';
-
+  // Create day headers
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   days.forEach(day => {
-    const dayDiv = document.createElement('div');
-    dayDiv.classList.add('day');
-    dayDiv.innerText = day;
-    calendar.appendChild(dayDiv);
+    const dayEl = document.createElement('div');
+    dayEl.classList.add('day');
+    dayEl.textContent = day;
+    calendarEl.appendChild(dayEl);
   });
 
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Calculate days in current month
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
+  // Create empty slots for days before the first day of the month
   for (let i = 0; i < firstDay; i++) {
-    const emptyDiv = document.createElement('div');
-    calendar.appendChild(emptyDiv);
+    const emptyEl = document.createElement('div');
+    emptyEl.classList.add('date');
+    calendarEl.appendChild(emptyEl);
   }
 
-  for (let i = 1; i <= daysInMonth; i++) {
-    const dateDiv = document.createElement('div');
-    dateDiv.classList.add('date');
-    dateDiv.innerText = i;
+  // Create date elements
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateEl = document.createElement('div');
+    dateEl.classList.add('date');
+    dateEl.textContent = day;
 
-    const date = `${year}-${month + 1}-${i}`;
-    dateDiv.addEventListener('click', async () => {
-      const notes = await fetchNotes(date);
-      renderNotes(date, notes);
-    });
-
-    calendar.appendChild(dateDiv);
-  }
-}
-
-function renderNotes(date, notes) {
-  const notesDiv = document.getElementById('notes');
-  notesDiv.innerHTML = `<h3>${date}</h3>`;
-  notes.forEach(note => {
-    const noteItem = document.createElement('div');
-    noteItem.innerText = note;
-
-    noteItem.addEventListener('click', async () => {
-      await deleteNoteFromAPI(date, note);
-      const updatedNotes = await fetchNotes(date);
-      renderNotes(date, updatedNotes);
-    });
-
-    notesDiv.appendChild(noteItem);
-  });
-
-  const noteInput = document.getElementById('note-input');
-  const addNoteBtn = document.getElementById('add-note');
-  addNoteBtn.onclick = async () => {
-    if (noteInput.value.trim()) {
-      await addNoteToAPI(date, noteInput.value);
-      const updatedNotes = await fetchNotes(date);
-      renderNotes(date, updatedNotes);
-      noteInput.value = '';
+    // Highlight today's date
+    const today = new Date();
+    if (
+      day === today.getDate() &&
+      currentMonth === today.getMonth() &&
+      currentYear === today.getFullYear()
+    ) {
+      dateEl.classList.add('today');
     }
-  };
+
+    calendarEl.appendChild(dateEl);
+  }
 }
 
-const today = new Date();
-generateCalendar(today.getFullYear(), today.getMonth());
+// Add event listeners to navigation buttons
+prevBtn.addEventListener('click', () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  generateCalendar(currentDate);
+});
+
+nextBtn.addEventListener('click', () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  generateCalendar(currentDate);
+});
+
+// Initialize calendar
+generateCalendar(currentDate);
