@@ -1,0 +1,35 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin: 20px auto;
+  width: 350px;
+}
+
+.day, .date {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.date {
+  cursor: pointer;
+}
+
+.date:hover {
+  background-color: #f0f0f0;
+}
+
+#note-section {
+  margin-top: 20px;
+}
+
+#note-input {
+  margin-bottom: 10px;
+  width: 200px;
+  padding: 5px;
+}
